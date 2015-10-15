@@ -1,0 +1,3 @@
+rootProject.name = 'reactnativeReddit'
+
+include ':app'
