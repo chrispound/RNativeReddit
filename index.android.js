@@ -12,8 +12,9 @@ var {
   View,
   ListView,
   ProgressBar,
+  TextInput,
 } = React;
-var REACTNATIVE_URL = 'https://www.reddit.com/r/reactnative.json';
+var REACTNATIVE_URL = 'http://www.reddit.com/.json';
 var reactnativeReddit = React.createClass({
   getInitialState: function() {
     return {
@@ -27,13 +28,26 @@ var reactnativeReddit = React.createClass({
     this.loadSubredditData(REACTNATIVE_URL);
   },
   render: function() {
-    if(!this.state.loaded) {
-      return this.renderLoadingView();
-    }
+    // if(!this.state.loaded) {
+    //   return this.renderLoadingView();
+    // }
     console.log("rendering list")
     return (
       <View style={styles.container}>
-      <Text>Reddit.com/r/reactnative</Text>
+      <View style={styles.container}>
+        <Text>Enter Subreddit</Text>
+        <TextInput style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+          onChangeText={(text) => {
+            var temp = 'http://www.reddit.com/r/'+text+'.json';
+            this.setState({
+              subreddit: text,
+              loaded: false,
+            })
+            this.loadSubredditData(temp);
+          }
+        }
+          value={this.state.text}/>
+    </View>
       <ListView
         dataSource={this.state.dataSource}
         renderRow={this.renderRedditPost}
@@ -45,11 +59,13 @@ var reactnativeReddit = React.createClass({
     fetch(url)
     .then((response) =>response.json())
     .then((responseData)=> {
-      console.log("data: " +responseData);
-      this.setState({
-        dataSource: this.state.dataSource.cloneWithRows(responseData.data.children),
-        loaded: true,
-      });
+      if(!responseData.error) {
+        console.log("data: " +responseData);
+        this.setState({
+          dataSource: this.state.dataSource.cloneWithRows(responseData.data.children),
+          loaded: true,
+        });
+      }
     })
     .done();
   },
@@ -64,7 +80,7 @@ var reactnativeReddit = React.createClass({
  },
  renderRedditPost: function(data) {
    return (
-     <View style={styles.container}>
+     <View style={styles.redditPostContainer}>
           <Text style={styles.redditpost}>{data.data.title}</Text>
     </View>
           );
@@ -89,7 +105,14 @@ var styles = StyleSheet.create({
   redditpost: {
     textAlign: 'left',
     fontSize:16,
-    color:'blue',
+    color:'#3366BB',
+  },
+  redditPostContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
+    margin: 16,
   },
 });
 

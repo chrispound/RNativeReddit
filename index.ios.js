@@ -10,18 +10,73 @@ var {
   StyleSheet,
   Text,
   View,
+  ListView,
+  ProgressBar,
+  TextInput,
 } = React;
-
-var REACTNATIVE_SUBREDDIT_DATA = "reddit.com/r/reactnative.json"
+var REACTNATIVE_URL = 'https://www.reddit.com/.json';
 var reactnativeReddit = React.createClass({
-
-  initialState
-
+  getInitialState: function() {
+    return {
+      loaded: false,
+      subreddit: '',
+      dataSource: new ListView.DataSource({
+        rowHasChanged: (row1, row2) => row1 !== row2,
+      }),
+    }
+  },
+  componentDidMount: function() {
+    this.loadSubredditData(REACTNATIVE_URL);
+  },
   render: function() {
+    if(!this.state.loaded) {
+      return this.renderLoadingView();
+    }
+    console.log("rendering list")
     return (
-   
+      <View style={styles.container}>
+        <View style={styles.container}>
+          <Text>Enter Subreddit</Text>
+          <TextInput style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+            onChangeText={(text) => this.setState({text})}
+            value={this.state.text}/>
+      </View>
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={this.renderRedditPost}
+        style={styles.listView}/>
+        </View>
     );
-  }
+  },
+  loadSubredditData: function(url) {
+    fetch(url)
+    .then((response) =>response.json())
+    .then((responseData)=> {
+      console.log("data: " +responseData);
+      this.setState({
+        dataSource: this.state.dataSource.cloneWithRows(responseData.data.children),
+        loaded: true,
+      });
+    })
+    .done();
+  },
+  renderLoadingView: function() {
+   return (
+     <View style={styles.container}>
+       <Text>
+         Loading reddit...
+       </Text>
+     </View>
+   );
+ },
+ renderRedditPost: function(data) {
+   return (
+     <View style={styles.redditPostContainer}>
+          <Text style={styles.redditpost}>{data.data.title}</Text>
+    </View>
+          );
+ }
+
 });
 
 var styles = StyleSheet.create({
@@ -31,15 +86,24 @@ var styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
+  listView: {
+    paddingTop: 20,
+    paddingBottom:20,
+    paddingRight:16,
+    paddingLeft: 16,
+    backgroundColor: '#F5FCFF',
   },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
+  redditpost: {
+    textAlign: 'left',
+    fontSize:16,
+    color:'#3366BB',
+  },
+  redditPostContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
+    margin: 16,
   },
 });
 
